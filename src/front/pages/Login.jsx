@@ -12,13 +12,17 @@ export const Login = () => {
         try {
             const response = await fetch(import.meta.env.VITE_BACKEND_URL + "/api/token", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ email, password })
             });
 
             const data = await response.json();
+            console.log("Respuesta del backend:", data); // 👈 Verifica qué responde Flask
 
-            if (response.ok) {
+            if (response.ok && data.token) {
+                console.log("TOKEN RECIBIDO:", data.token);
                 sessionStorage.setItem("token", data.token);
                 navigate("/private");
             } else {
@@ -26,7 +30,7 @@ export const Login = () => {
             }
         } catch (error) {
             console.error("Error en login:", error);
-            alert("Error de conexión");
+            alert("Error de conexión con el servidor");
         }
     };
 
@@ -36,7 +40,7 @@ export const Login = () => {
             <form onSubmit={handleLogin}>
                 <input
                     type="email"
-                    placeholder="Correo"
+                    placeholder="Correo electrónico"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required

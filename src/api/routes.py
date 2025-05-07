@@ -6,6 +6,8 @@ from .models import db, User
 api = Blueprint('api', __name__)
 
 # 📌 Registro de usuario
+
+
 @api.route('/user', methods=['POST'])
 def register_user():
     body = request.get_json()
@@ -27,6 +29,8 @@ def register_user():
     return jsonify({"msg": "Usuario creado exitosamente"}), 200
 
 # 🔐 Login y generación de token
+
+
 @api.route('/token', methods=['POST'])
 def create_token():
     body = request.get_json()
@@ -43,20 +47,29 @@ def create_token():
     if not check_password_hash(user.password, password):
         return jsonify({"msg": "Contraseña incorrecta"}), 401
 
-    access_token = create_access_token(identity=user.id)
-    return jsonify({ "token": access_token }), 200
+    access_token = create_access_token(
+        identity=str(user.id))  # 👈 forzamos string
+    return jsonify({"token": access_token}), 200
 
 # 🔒 Ruta protegida
+
+
 @api.route('/private', methods=['GET'])
 @jwt_required()
 def protected_route():
     current_user_id = get_jwt_identity()
+    print("🔒 Usuario identificado:", current_user_id)
     user = User.query.get(current_user_id)
 
     if not user:
         return jsonify({"msg": "Usuario no encontrado"}), 404
 
     return jsonify({
-        "msg": f"Bienvenido, {user.email}. Esta es una ruta protegida.",
+        "msg": f"Bienvenido, {user.email}. Esta es una ruta ALTAMENTE protegida. Solo un hacker muy canijo podría entrar a esta página",
         "email": user.email
     }), 200
+
+
+@api.route('/hello', methods=['GET'])
+def hello():
+    return jsonify({"message": "Hola desde el backend 🐍"}), 200

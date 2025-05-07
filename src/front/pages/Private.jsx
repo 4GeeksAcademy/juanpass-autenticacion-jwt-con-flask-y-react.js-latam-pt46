@@ -7,32 +7,40 @@ export const Private = () => {
 
     useEffect(() => {
         const token = sessionStorage.getItem("token");
-
+        console.log("🔐 Token desde sessionStorage:", token);
+    
         if (!token) {
+            console.log("❌ No hay token, redirigiendo a login...");
             navigate("/login");
             return;
         }
-
-        fetch(process.env.BACKEND_URL + "/api/private", {
+    
+        console.log("✅ Token encontrado. Haciendo fetch a /api/private");
+    
+        fetch(import.meta.env.VITE_BACKEND_URL + "/api/private", {
             method: "GET",
             headers: {
-                Authorization: "Bearer " + token
-            }
+                Authorization: "Bearer " + token,
+            },
         })
-        .then(resp => {
-            if (!resp.ok) {
-                throw new Error("Token inválido o expirado");
-            }
-            return resp.json();
-        })
-        .then(data => {
-            setMessage(data.msg);
-        })
-        .catch(error => {
-            console.error(error);
-            sessionStorage.removeItem("token");
-            navigate("/login");
-        });
+            .then((resp) => {
+                console.log("📡 Respuesta cruda:", resp);
+                if (!resp.ok) {
+                    return resp.json().then(err => {
+                        throw new Error(err.msg || "Token inválido o expirado");
+                    });
+                }
+                return resp.json();
+            })
+            .then((data) => {
+                console.log("🎉 Respuesta JSON:", data);
+                setMessage(data.msg);
+            })
+            .catch((error) => {
+                console.error("🔥 Error en fetch:", error);
+                sessionStorage.removeItem("token");
+                navigate("/login");
+            });
     }, [navigate]);
 
     return (
